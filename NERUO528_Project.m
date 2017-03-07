@@ -1,7 +1,7 @@
 
-clear all
-close all
-clc
+% clear all
+% close all
+% clc
 animal_number = 1712;
 
 %%
@@ -58,69 +58,69 @@ num_data_files   = length(data_files);
 
 
 %% Load 
-textprogressbar('Loading: ')
-
-CHAN_DATA = [];
-for index = 1:num_data_files,    
-    fullFilePath = [data_file_path '/' data_files(index).name];
-    
-    load(fullFilePath);
-    CHAN_DATA(index,:) = dataStruct.data;
-    
-    % Status
-    textprogressbar(index/num_data_files*100);
-end
-textprogressbar('  Finished.') 
+% textprogressbar('Loading: ')
+% 
+% CHAN_DATA = [];
+% for index = 1:num_data_files,    
+%     fullFilePath = [data_file_path '/' data_files(index).name];
+%     
+%     load(fullFilePath);
+%     CHAN_DATA(index,:) = dataStruct.data;
+%     
+%     % Status
+%     textprogressbar(index/num_data_files*100);
+% end
+% textprogressbar('  Finished.') 
 
 
 %% Filter
-fs = dataStruct.fs;
-f_top = 5000;
-f_bot = 100;
-
-[b_stop, a_stop] = butter(3,[f_bot/(fs/2) f_top/(fs/2)], 'stop');
-
-textprogressbar('BandPass Filter: ')
-for index = 1:num_data_files,    
-    dataIn = CHAN_DATA(index,:);
-    dataOut = filter(b_stop, a_stop, dataIn);
-    
-    CHAN_DATA(index,:) = dataOut;
-    
-    % Status
-    textprogressbar(index/num_data_files*100);
-end
-textprogressbar('  Finished.') 
+% fs = dataStruct.fs;
+% f_top = 5000;
+% f_bot = 100;
+% 
+% [b_stop, a_stop] = butter(3,[f_bot/(fs/2) f_top/(fs/2)], 'stop');
+% 
+% textprogressbar('BandPass Filter: ')
+% for index = 1:num_data_files,    
+%     dataIn = CHAN_DATA(index,:);
+%     dataOut = filter(b_stop, a_stop, dataIn);
+%     
+%     CHAN_DATA(index,:) = dataOut;
+%     
+%     % Status
+%     textprogressbar(index/num_data_files*100);
+% end
+% textprogressbar('  Finished.') 
 
 
 %% Threshold
-textprogressbar('Firing Rate: ')
-
-CHAN_DATA_spikeTimes = [];
-for index = 1:num_data_files,
-    dataIn = CHAN_DATA(index,:);
-    
-    threshold = std(dataIn((10^6):end-(10^6)))*1;
-    
-    posValues = dataIn > threshold;
-    posValueArea = bwlabel(posValues);
-    
-    spikeIndices = diff(posValueArea) > 0;
-    
-    CHAN_DATA_spikeTimes(index,:) = spikeIndices;
-    
-    % Status
-    textprogressbar(index/num_data_files*100);
-end
-textprogressbar('  Finished.')
+% textprogressbar('Firing Rate: ')
+% 
+% CHAN_DATA_spikeTimes = [];
+% for index = 1:num_data_files,
+%     dataIn = CHAN_DATA(index,:);
+%     
+%     threshold = std(dataIn((10^6):end-(10^6)))*1;
+%     
+%     posValues = dataIn > threshold;
+%     posValueArea = bwlabel(posValues);
+%     
+%     spikeIndices = diff(posValueArea) > 0;
+%     
+%     CHAN_DATA_spikeTimes(index,:) = spikeIndices;
+%     
+%     % Status
+%     textprogressbar(index/num_data_files*100);
+% end
+% textprogressbar('  Finished.')
 
 
 %% Reconcile Timeseries
 N_1 = length(TRIAL_DATA.time_tstamp_msec);
-N_2 = length(CHAN_DATA_spikeTimes(index,:));
+N_2 = length(ADC1_DATA(2,:));
 
 fs_1 = 1000;
-fs_2 = fs;
+fs_2 = dataStruct.fs;
 
 ts_1 = TRIAL_DATA.time_tstamp_msec./1000;
 ts_2 = linspace(0, (N_2-1)/fs_2, N_2)';
@@ -173,66 +173,66 @@ ts_1(trainer_trialEnd_idx)/ts_2(TDT_trialEnd_idx);
 
 %% Trial Num Downsampling
 [~, binInd] = histc(ts_2.*1000, ts_1.*1000);
-TDT_TrialNum_binned = accumarray(binInd, TDT_TrialNum(1:end-1), [], @mean);
+TDT_TrialNum_binned = accumarray(binInd, TDT_TrialNum(1:end), [], @mean);
 left_over_samples = (length(ts_1)-length(TDT_TrialNum_binned));
 ts_2_new = ts_1(1:end-left_over_samples);
 
 
 %% Plot
-% figure
-%     hold all
-%     
-%     ydata = trainer_TrialNum;
-%     xdata = ts_1';
-%     mask = xdata>=0 & xdata < 1000;
-%     plot(xdata(mask), ydata(mask), 'r');
-%     
-%     ydata = TDT_TrialNum_binned;
-%     xdata = ts_2_new';
-%     mask = xdata>=0 & xdata < 1000;
-%     plot(xdata(mask), ydata(mask), 'b');
+figure
+    hold all
+    
+    ydata = trainer_TrialNum;
+    xdata = ts_1';
+    mask = xdata>=0 & xdata < 1000;
+    plot(xdata(mask), ydata(mask), 'r');
+    
+    ydata = TDT_TrialNum_binned;
+    xdata = ts_2_new';
+    mask = xdata>=0 & xdata < 1000;
+    plot(xdata(mask), ydata(mask), 'b');
 
 
 %% Downsample (Bin spike Times)
-textprogressbar('Binning: ');
-
-CHAN_DATA_spikeTimes_binned = [];
-for index = 1:num_data_files,
-    dataIn = CHAN_DATA_spikeTimes(index,:);
-    
-%     dummy_ts = [0:1/fs:1-1/fs].*1000;
-%     dummy_dataIn = dataIn(1:length(dummy_ts));
+% textprogressbar('Binning: ');
+% 
+% CHAN_DATA_spikeTimes_binned = [];
+% for index = 1:num_data_files,
+%     dataIn = CHAN_DATA_spikeTimes(index,:);
 %     
-%     dummy_newTs = [0:1000];
-%     [~, binInd] = histc(dummy_ts, dummy_newTs);
-%     dataOut = accumarray(binInd', dummy_dataIn);
-    
-    [~, binInd] = histc(ts_2.*1000, ts_1.*1000);
-    dataOut = accumarray(binInd, dataIn);
-    
-    CHAN_DATA_spikeTimes_binned(index,:) = dataOut;
-    
-    % Status
-    textprogressbar(index/num_data_files*100);
-end
-textprogressbar('  Finished.');
+% %     dummy_ts = [0:1/fs:1-1/fs].*1000;
+% %     dummy_dataIn = dataIn(1:length(dummy_ts));
+% %     
+% %     dummy_newTs = [0:1000];
+% %     [~, binInd] = histc(dummy_ts, dummy_newTs);
+% %     dataOut = accumarray(binInd', dummy_dataIn);
+%     
+%     [~, binInd] = histc(ts_2.*1000, ts_1.*1000);
+%     dataOut = accumarray(binInd, dataIn);
+%     
+%     CHAN_DATA_spikeTimes_binned(index,:) = dataOut;
+%     
+%     % Status
+%     textprogressbar(index/num_data_files*100);
+% end
+% textprogressbar('  Finished.');
 
 
 %% Smoothing
-textprogressbar('Smoothing: ');
-
-for index = 1:num_data_files,
-    dataIn = CHAN_DATA_spikeTimes_binned(index,:);
-    
-    window_size = 100; %ms
-    dataOut = smooth(dataIn, window_size);
-    
-    CHAN_DATA_spikeTimes_binned(index,:) = dataOut;
-    
-    % Status
-    textprogressbar(index/num_data_files*100);
-end
-textprogressbar('  Finished.');
+% textprogressbar('Smoothing: ');
+% 
+% for index = 1:num_data_files,
+%     dataIn = CHAN_DATA_spikeTimes_binned(index,:);
+%     
+%     window_size = 100; %ms
+%     dataOut = smooth(dataIn, window_size);
+%     
+%     CHAN_DATA_spikeTimes_binned(index,:) = dataOut;
+%     
+%     % Status
+%     textprogressbar(index/num_data_files*100);
+% end
+% textprogressbar('  Finished.');
 
 
 %% Data
