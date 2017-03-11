@@ -3,7 +3,7 @@ clear all
 close all
 clc
 % use 1712 for presentation
-animal_number = 1712;
+animal_number = 1713;
 
 %%
 data_path = pwd;
@@ -24,7 +24,7 @@ TRIAL_DATA.GBL_y_axis                   = sessionObj.DATA.GBL_y_axis;
 
 
 %% Load neural Data
-load('neuralSpikeFiringRates_Animal_1712')
+load('neuralSpikeFiringRates_Animal_1713')
 
 
 %% Data
@@ -418,7 +418,7 @@ txt1 = '\leftarrow entering target';
 x1 = 3;
 y1 = 7*max_value/8;
 text(x1,y1,txt1,'FontSize',14)
-SaveFig('C:\Users\djcald\SharedCode\Neuro528Project', 'baseline', 'png', '-r600');
+%SaveFig('C:\Users\djcald\SharedCode\Neuro528Project', 'baseline', 'png', '-r600');
 
 textprogressbar('  Finished.')
 
